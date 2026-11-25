@@ -1,0 +1,53 @@
+KARAOKE ZONA MIX — EDICIÓN CORREGIDA
+===================================
+
+INSTALACIÓN EN LARAGON
+1. Haz una copia de seguridad de karaoke_db si contiene información que quieras conservar.
+2. Descomprime la carpeta karaoke_zonamix_v10_desde_cero dentro de C:\laragon\www\.
+3. Abre Laragon y pulsa Iniciar todo.
+4. Entra a http://localhost/phpmyadmin/ y usa Importar para cargar SOLO este archivo: database/KARAOKE_ZONA_MIX_COMPLETO_DESDE_CERO.sql
+4b. OPCIONAL — datos de prueba: después importa database/DATOS_DE_PRUEBA.sql (13 usuarios, 41 reservas, 24 comprobantes y 59 mensajes de chat con fotos). Contraseña de todas las cuentas de prueba: Admin2026!  (clientes: carlos.mamani@prueba.com, valeria.rojas@prueba.com, etc.; segundo admin: admin2@prueba.com)
+5. IMPORTANTE: el SQL elimina y vuelve a crear karaoke_db. No lo importes encima de datos que debas conservar.
+6. Comprueba config/database.php: por defecto usa MySQL local, usuario root y contraseña vacía.
+7. Abre http://localhost/karaoke_zonamix_v10_desde_cero/
+
+ADMINISTRADOR INICIAL
+Correo: admin@karaoke.com
+Contraseña prevista: Admin2026!
+
+CORRECCIONES INCLUIDAS
+- Chat cliente/administrador: solicitudes AJAX con token CSRF y aviso visible si el servidor rechaza el envío.
+- Salas: confirmación antes de cambiar el estado a mantenimiento; las reservas existentes se conservan.
+- Reportes mensuales: bloqueados los meses futuros del año actual y todos los años futuros.
+- Reservas del administrador: día actual por defecto, fechas futuras bloqueadas, orden por día/hora más recientes primero y DataTables con paginación y búsqueda.
+- Tema claro/oscuro con interruptor persistente en el menú y panel de administración.
+- PDF: gráficos centrados, animación desactivada al imprimir y columnas apiladas para evitar superposición.
+- Catálogo: productos.admin_id es ahora una LLAVE FORÁNEA a usuarios(id) (ON DELETE SET NULL). Si ya tienes la base creada, ejecuta database/MIGRACION_FK_PRODUCTOS_ADMIN.sql en vez de reimportar.
+- Usuarios: formulario seguro para crear más cuentas administradoras.
+
+ESTRUCTURA DE CONTROLADORES (v11)
+controllers/AuthController.php      login, registro, logout
+controllers/PublicController.php    páginas públicas
+controllers/ClienteController.php   une los temas de controllers/cliente/
+  cliente/ClienteGeneral.php        inicio, menú, horarios
+  cliente/ClienteReservas.php       reservar, mis reservas, cancelar
+  cliente/ClientePagos.php          método de pago y comprobantes
+  cliente/ClientePerfil.php         perfil y contraseña
+  cliente/ClienteChat.php           chat y contador de no leídos
+controllers/AdminController.php     une los temas de controllers/admin/
+  admin/AdminDashboard.php, AdminSalas.php, AdminReservas.php,
+  AdminComprobantes.php, AdminUsuarios.php, AdminReportes.php,
+  AdminProductos.php, AdminChats.php
+Las rutas (?r=admin/productos, etc.) no cambiaron.
+
+CONTRASEÑAS (v18)
+- El administrador NO puede editar contraseñas de otros usuarios.
+- Cliente que olvidó su contraseña: se presenta al local y el admin pulsa «🔑 Restablecer contraseña» en Usuarios.
+  La nueva contraseña es: número de celular + iniciales de nombres y apellidos (ej.: 71234501CMQ). Se muestra una sola vez al admin.
+- Cada administrador edita SUS datos, foto y contraseña en el menú «👤 Mi perfil» (la contraseña pide la actual).
+- En Usuarios el admin solo puede VER, restablecer contraseña (clientes y otros administradores) o dar de baja / dar de alta; no edita datos ajenos.
+- Dar de baja NO borra al usuario de la base de datos: solo marca usuarios.activo = 0 y le impide iniciar sesión (también cierra su sesión abierta). «Dar de alta» lo vuelve a habilitar. Si ya tienes la base creada, ejecuta database/MIGRACION_USUARIOS_ACTIVO.sql en vez de reimportar.
+
+NOTAS
+- Bootstrap, Chart.js y DataTables se cargan desde CDN; se requiere Internet para esos recursos.
+- Se verificó la sintaxis de todos los archivos PHP y la estructura del paquete. No hay un servidor MySQL de Laragon disponible en este entorno, por lo que debes probar el inicio de sesión y el chat en tu equipo después de importar el SQL.
